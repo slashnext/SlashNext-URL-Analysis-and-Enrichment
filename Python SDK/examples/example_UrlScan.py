@@ -22,9 +22,9 @@ url_scan_action = SlashNextUrlScan(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = url_scan_action.name()
-action_title = url_scan_action.title()
-action_description = url_scan_action.description()
-action_parameters = url_scan_action.parameters()
-action_help = url_scan_action.help()
+action_name = url_scan_action.name
+action_title = url_scan_action.title
+action_description = url_scan_action.description
+action_parameters = url_scan_action.parameters
+action_help = url_scan_action.help
 response_details, response_list = url_scan_action.execution(url='https://www.google.com/', extended_info='true')

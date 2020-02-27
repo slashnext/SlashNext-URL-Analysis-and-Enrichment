@@ -61,24 +61,24 @@ def snx_api_request(base, endpoint, data, method='POST'):
                 if json_response.get('errorNo') == 0 or json_response.get('errorNo') == 1:
                     return 'Success', json_response
                 else:
-                    return '{}'.format(json_response.get('errorMsg')), json_response
+                    return '{0}'.format(json_response.get('errorMsg')), json_response
 
             except Exception as e:
-                return 'API response JSON decoding failed due to {}'.format(str(e)), response
+                return 'API response JSON decoding failed due to {0}'.format(str(e)), response
 
         elif response.status_code == 404:
-            return 'Given API path is invalid. Please verify the Base URL and retry', response
+            return 'Please provide a valid configuration or contact support@slashnext.com', response
         else:
-            return 'API response failed due to {}'.format(response.reason), response
+            return 'API response failed due to {0}'.format(response.reason), response
 
     except requests.exceptions.Timeout:
         return 'Looks like the server is taking to long to respond, this can be caused by either poor connectivity ' \
                'or an error with our servers. Please try again in a while', None
     except requests.exceptions.TooManyRedirects:
-        return 'Given API path is invalid. Please verify the Base URL and retry', None
+        return 'Please provide a valid configuration or contact support@slashnext.com', None
     except requests.exceptions.RequestException:
-        return 'There was a problem with your request. Please try again later', None
+        return 'Please provide a valid configuration or contact support@slashnext.com', None
     except Exception as e:
-        return 'API response failed due to {}'.format(str(e)), None
+        return 'API response failed due to {0}'.format(str(e)), None
 
 

@@ -1,13 +1,13 @@
 # SlashNext Phishing Incident Response SDK (Software Development Kit)
 SlashNext Phishing Incident Response SDK allows users to manually perform certain data enrichment using SlashNext On-demand Threat Intelligence cloud APIs. It also enables users to write their own application/playbooks for IR automation. 
  
-**SlashNext On-demand Threat Intelligence** analyzes the provided IoCs (URL, IPv4 or FQDN) with the **SlashNext SEER™** threat detection cloud to get definitive, binary verdicts (malicious or benign) along with IOCs, screen-shots, and more.  
+**SlashNext On-demand Threat Intelligence** analyzes the provided IoCs (URL, IPv4 or FQDN) with the **SlashNext SEER™** threat detection cloud to get definitive, binary verdicts (malicious or benign) along with IOCs, screen-shots, and more. 
 
-SlashNext threat detection uses browsers in a purpose-built cloud to dynamically inspect page contents and site behavior in real-time. This method enables SlashNext to follow URL re-directs and multi-stage attacks to more thoroughly analyze the final page(s) and made a much more accurate, binary determination with near-zero false positives. It also detects all six major categories of phishing and social engineering sites. These include credential stealing, rogue software / malware sites, scareware, phishing exploits (sites hosting weaponized documents, etc.), and social engineering scams (fake deals, giveaways, etc.).  
+SlashNext threat detection uses browsers in a purpose-built cloud to dynamically inspect page contents and site behavior in real-time. This method enables SlashNext to follow URL re-directs and multi-stage attacks to more thoroughly analyze the final page(s) and made a much more accurate, binary determination with near-zero false positives. It also detects all six major categories of phishing and social engineering sites. These include credential stealing, rogue software / malware sites, scareware, phishing exploits (sites hosting weaponized documents, etc.), and social engineering scams (fake deals, giveaways, etc.). 
 
-Use cases include abuse inbox management where SOC teams can automate URL analysis in phishing emails to save hundreds of hours versus more manual methods. Playbooks that mine and analyze network logs can also leverage SlashNext URL analysis on demand.  
+Use cases include abuse inbox management where SOC teams can automate URL analysis in phishing emails to save hundreds of hours versus more manual methods. Playbooks that mine and analyze network logs can also leverage SlashNext URL analysis on demand. 
 
-SlashNext not only provides accurate, binary verdicts (rather than threat scores), it provides IOC metadata and screen shots of detected phishing pages. These enables easier classification and reporting. Screen shots can be used as an aid in on-going employee phishing awareness training and testing.  
+SlashNext not only provides accurate, binary verdicts (rather than threat scores), it provides IOC metadata and screen shots of detected phishing pages. These enables easier classification and reporting. Screen shots can be used as an aid in on-going employee phishing awareness training and testing. 
 
 The SlashNext Phishing Incident Response SDK uses an API key to authenticate with SlashNext cloud. If you don't have a valid API key, contact the SlashNext team: support@slashnext.com
 
@@ -105,7 +105,7 @@ response_details, response_list = host_reputation_action.execution(host='www.goo
 
 ## Supported Actions
 
-1. **slashnext-api-quota** - Find information about your API quota, like current usage, quota left etc.  
+1. **slashnext-api-quota** - Find information about your API quota, like current usage, quota left etc. 
 1. **slashnext-host-reputation** - Search in SlashNext cloud database and retrieve reputation of a host. 
 1. **slashnext-host-report** - Search in SlashNext cloud database and retrieve a detailed report for a host and associated URL.
 1. **slashnext-host-urls** - Search in SlashNext cloud database and retrieve list of all URLs associated with the specified host.
@@ -114,7 +114,7 @@ response_details, response_list = host_reputation_action.execution(host='www.goo
 1. **slashnext-scan-report** - Retrieve URL scan results against a previous scan request.
 1. **slashnext-download-screenshot** - Download webpage screenshot against a previous URL scan request.
 1. **slashnext-download-html** - Download webpage html against a previous URL scan request. 
-1. **slashnext-download-text** - Download webpage text against a previous URL scan request.  
+1. **slashnext-download-text** - Download webpage text against a previous URL scan request. 
  
 ## Action: 'slashnext-api-quota'
 

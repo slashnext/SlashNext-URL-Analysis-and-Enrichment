@@ -22,9 +22,9 @@ download_text_action = SlashNextDownloadText(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = download_text_action.name()
-action_title = download_text_action.title()
-action_description = download_text_action.description()
-action_parameters = download_text_action.parameters()
-action_help = download_text_action.help()
+action_name = download_text_action.name
+action_title = download_text_action.title
+action_description = download_text_action.description
+action_parameters = download_text_action.parameters
+action_help = download_text_action.help
 response_details, response_list = download_text_action.execution(scanid='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')

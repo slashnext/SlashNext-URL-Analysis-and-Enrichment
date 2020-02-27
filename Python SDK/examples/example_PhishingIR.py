@@ -19,13 +19,10 @@ import os
 from SlashNextPhishingIR import SlashNextPhishingIR
 
 phishing_ir = SlashNextPhishingIR(os.getcwd())
-
 phishing_ir.set_conf(
     api_key="this_is_a_valid_api_key",
     base_url="https://oti.slashnext.cloud/api"
 )
-phishing_ir.reset_error()
-phishing_ir.load_conf()
 
 # Checking if the configurations are successfully loaded
 pir_status, pir_details = phishing_ir.get_status()

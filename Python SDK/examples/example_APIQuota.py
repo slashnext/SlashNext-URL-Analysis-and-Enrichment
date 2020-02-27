@@ -22,9 +22,9 @@ api_quota_action = SlashNextApiQuota(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = api_quota_action.name()
-action_title = api_quota_action.title()
-action_description = api_quota_action.description()
-action_parameters = api_quota_action.parameters()
-action_help = api_quota_action.help()
+action_name = api_quota_action.name
+action_title = api_quota_action.title
+action_description = api_quota_action.description
+action_parameters = api_quota_action.parameters
+action_help = api_quota_action.help
 response_details, response_list = api_quota_action.execution()

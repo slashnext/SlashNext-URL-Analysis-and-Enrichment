@@ -22,10 +22,10 @@ download_screenshot_action = SlashNextDownloadScreenshot(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = download_screenshot_action.name()
-action_title = download_screenshot_action.title()
-action_description = download_screenshot_action.description()
-action_parameters = download_screenshot_action.parameters()
-action_help = download_screenshot_action.help()
+action_name = download_screenshot_action.name
+action_title = download_screenshot_action.title
+action_description = download_screenshot_action.description
+action_parameters = download_screenshot_action.parameters
+action_help = download_screenshot_action.help
 response_details, response_list = download_screenshot_action.execution(scanid='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
                                                                        resolution='high')

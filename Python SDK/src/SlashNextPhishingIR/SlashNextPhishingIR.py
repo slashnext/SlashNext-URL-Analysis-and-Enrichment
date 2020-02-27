@@ -13,7 +13,7 @@ Created on December 10, 2019
 
 @author: Saadat Abid
 """
-from os import path
+from os import path, makedirs
 import json
 from .SlashNextApiQuota import SlashNextApiQuota
 from .SlashNextHostReputation import SlashNextHostReputation
@@ -40,65 +40,68 @@ class SlashNextPhishingIR(object):
 
         :param conf_dir: The absolute path of the directory where OTI configuration file 'snx_conf.json' is placed.
         """
-        self.conf_dir = conf_dir
-        self.status = 'ok'
-        self.details = 'Success'
+        self.__conf_dir = conf_dir
+        self.__status = 'ok'
+        self.__details = 'Success'
 
-        self.api_key = None
-        self.base_url = None
+        self.api_key = ''
+        self.base_url = 'https://oti.slashnext.cloud/api'
 
-        self.api_quota = None
-        self.host_reputation = None
-        self.host_report = None
-        self.host_urls = None
-        self.url_scan = None
-        self.url_scan_sync = None
-        self.scan_report = None
-        self.download_sc = None
-        self.download_html = None
-        self.download_text = None
+        self.__api_quota = None
+        self.__host_reputation = None
+        self.__host_report = None
+        self.__host_urls = None
+        self.__url_scan = None
+        self.__url_scan_sync = None
+        self.__scan_report = None
+        self.__download_sc = None
+        self.__download_html = None
+        self.__download_text = None
 
         self.load_conf()
 
-        self.supported_actions = self.get_action_list()
+        self.__supported_actions = self.get_action_list()
 
     def load_conf(self):
         """
         Loads the OTI configurations from the default location and updates the status accordingly.
         """
-        if path.isfile(self.conf_dir + '/snx_conf.json'):
-            conf_fd = open(self.conf_dir + '/snx_conf.json', 'r+')
-            conf_data = conf_fd.read()
-            if conf_data == '':
-                self.set_error('No valid SlashNext cloud configurations found')
+        try:
+            with open(self.__conf_dir + '/snx_conf.json', 'r+') as conf_fd:
+                conf_data = conf_fd.read()
+
+            json_conf = json.loads(conf_data)
+            if json_conf.get('cloud'):
+                api_key = json_conf.get('cloud').get('api_key')
+                base_url = json_conf.get('cloud').get('base_url')
+
+                if api_key is None and base_url is None:
+                    self.set_error('Please provide a valid configuration or contact support@slashnext.com')
+                elif api_key is None or api_key.strip() == '':
+                    self.set_error('Please provide a valid API Key or contact support@slashnext.com')
+                elif base_url is None:
+                    self.api_key = api_key
+                else:
+                    self.api_key = api_key
+                    self.base_url = base_url
             else:
-                try:
-                    json_conf = json.loads(conf_data)
-                    if json_conf.get('cloud'):
-                        self.api_key = json_conf.get('cloud').get('api_key')
-                        self.base_url = json_conf.get('cloud').get('base_url')
+                self.set_error('Please provide a valid configuration or contact support@slashnext.com')
 
-                        if self.api_key is None:
-                            self.set_error('No API key found in the SlashNext cloud configurations file')
-                        if self.base_url is None:
-                            self.set_error('No Base URL found in the SlashNext cloud configurations file')
-                    else:
-                        self.set_error('No valid SlashNext cloud configurations found')
-                except Exception as e:
-                    self.set_error('SlashNext cloud configurations file loading failed due to ' + str(e))
-        else:
-            self.set_error('Unable to find SlashNext cloud configurations file')
+        except PermissionError:
+            self.set_error('Permission denied, please acquire the proper privileges and retry')
+        except Exception as e:
+            self.set_error('Please provide a valid configuration or contact support@slashnext.com')
 
-        self.api_quota = SlashNextApiQuota(self.api_key, self.base_url)
-        self.host_reputation = SlashNextHostReputation(self.api_key, self.base_url)
-        self.host_report = SlashNextHostReport(self.api_key, self.base_url)
-        self.host_urls = SlashNextHostUrls(self.api_key, self.base_url)
-        self.url_scan = SlashNextUrlScan(self.api_key, self.base_url)
-        self.url_scan_sync = SlashNextUrlScanSync(self.api_key, self.base_url)
-        self.scan_report = SlashNextScanReport(self.api_key, self.base_url)
-        self.download_sc = SlashNextDownloadScreenshot(self.api_key, self.base_url)
-        self.download_html = SlashNextDownloadHtml(self.api_key, self.base_url)
-        self.download_text = SlashNextDownloadText(self.api_key, self.base_url)
+        self.__api_quota = SlashNextApiQuota(self.api_key, self.base_url)
+        self.__host_reputation = SlashNextHostReputation(self.api_key, self.base_url)
+        self.__host_report = SlashNextHostReport(self.api_key, self.base_url)
+        self.__host_urls = SlashNextHostUrls(self.api_key, self.base_url)
+        self.__url_scan = SlashNextUrlScan(self.api_key, self.base_url)
+        self.__url_scan_sync = SlashNextUrlScanSync(self.api_key, self.base_url)
+        self.__scan_report = SlashNextScanReport(self.api_key, self.base_url)
+        self.__download_sc = SlashNextDownloadScreenshot(self.api_key, self.base_url)
+        self.__download_html = SlashNextDownloadHtml(self.api_key, self.base_url)
+        self.__download_text = SlashNextDownloadText(self.api_key, self.base_url)
 
     def set_conf(self, api_key, base_url):
         """
@@ -107,16 +110,25 @@ class SlashNextPhishingIR(object):
         :param api_key: The API Key used to authenticate with SlashNext OTI cloud.
         :param base_url: The Base URL for accessing SlashNext OTI APIs.
         """
-        conf_fd = open(self.conf_dir + '/snx_conf.json', 'w+')
-        conf_data = dict()
-        conf_data['cloud'] = {
-            'api_key': api_key,
-            'base_url': base_url
-        }
-        json.dump(conf_data, conf_fd)
+        try:
+            if not path.exists(self.__conf_dir):
+                makedirs(self.__conf_dir)
 
-        self.api_key = api_key
-        self.base_url = base_url
+            with open(self.__conf_dir + '/snx_conf.json', 'w+') as conf_fd:
+                conf_data = dict()
+                conf_data['cloud'] = {
+                    'api_key': api_key,
+                    'base_url': base_url
+                }
+                json.dump(conf_data, conf_fd)
+
+            self.reset_error()
+            self.load_conf()
+
+        except PermissionError:
+            self.set_error('Permission denied, please acquire the proper privileges and retry')
+        except Exception as e:
+            self.set_error('Please provide a valid configuration or contact support@slashnext.com')
 
     def set_error(self, details='Unknown'):
         """
@@ -124,15 +136,15 @@ class SlashNextPhishingIR(object):
 
         :param details: The details of the 'error' condition.
         """
-        self.status = 'error'
-        self.details = details
+        self.__status = 'error'
+        self.__details = details
 
     def reset_error(self):
         """
         Resets the status to 'ok'.
         """
-        self.status = 'ok'
-        self.details = 'Success'
+        self.__status = 'ok'
+        self.__details = 'Success'
 
     def get_status(self):
         """
@@ -140,7 +152,7 @@ class SlashNextPhishingIR(object):
 
         :return: The current status and the details of the status.
         """
-        return self.status, self.details
+        return self.__status, self.__details
 
     def get_action_list(self):
         """
@@ -150,16 +162,16 @@ class SlashNextPhishingIR(object):
         """
         action_list = list()
 
-        action_list.append(self.api_quota.name())
-        action_list.append(self.host_reputation.name())
-        action_list.append(self.host_report.name())
-        action_list.append(self.host_urls.name())
-        action_list.append(self.url_scan.name())
-        action_list.append(self.url_scan_sync.name())
-        action_list.append(self.scan_report.name())
-        action_list.append(self.download_sc.name())
-        action_list.append(self.download_html.name())
-        action_list.append(self.download_text.name())
+        action_list.append(self.__api_quota.name)
+        action_list.append(self.__host_reputation.name)
+        action_list.append(self.__host_report.name)
+        action_list.append(self.__host_urls.name)
+        action_list.append(self.__url_scan.name)
+        action_list.append(self.__url_scan_sync.name)
+        action_list.append(self.__scan_report.name)
+        action_list.append(self.__download_sc.name)
+        action_list.append(self.__download_html.name)
+        action_list.append(self.__download_text.name)
 
         return action_list
 
@@ -173,25 +185,25 @@ class SlashNextPhishingIR(object):
         action_lower = action.lower()
 
         if action_lower == 'slashnext-api-quota':
-            return self.api_quota.help()
+            return self.__api_quota.help
         elif action_lower == 'slashnext-host-reputation':
-            return self.host_reputation.help()
+            return self.__host_reputation.help
         elif action_lower == 'slashnext-host-report':
-            return self.host_report.help()
+            return self.__host_report.help
         elif action_lower == 'slashnext-host-urls':
-            return self.host_urls.help()
+            return self.__host_urls.help
         elif action_lower == 'slashnext-url-scan':
-            return self.url_scan.help()
+            return self.__url_scan.help
         elif action_lower == 'slashnext-url-scan-sync':
-            return self.url_scan_sync.help()
+            return self.__url_scan_sync.help
         elif action_lower == 'slashnext-scan-report':
-            return self.scan_report.help()
+            return self.__scan_report.help
         elif action_lower == 'slashnext-download-screenshot':
-            return self.download_sc.help()
+            return self.__download_sc.help
         elif action_lower == 'slashnext-download-html':
-            return self.download_html.help()
+            return self.__download_html.help
         elif action_lower == 'slashnext-download-text':
-            return self.download_text.help()
+            return self.__download_text.help
         else:
             action_list = self.get_action_list()
             help_str = ''
@@ -206,13 +218,241 @@ class SlashNextPhishingIR(object):
 
         :return: The current status and the details of the status after connectivity and authentication test.
         """
-        details, response = self.api_quota.execution()
+        details, response = self.__api_quota.execution()
         if details != 'Success':
             self.set_error(details)
         else:
             self.reset_error()
 
-        return self.status, self.details
+        return self.__status, self.__details
+
+    def __execute_api_quota(self, action_str_list):
+        """
+        Execute the API Quota action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) != 1:
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__api_quota.parameters
+        else:
+            details, response_list = self.__api_quota.execution()
+
+            if details.lower() == 'success':
+                return 'ok', self.__api_quota.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_host_reputation(self, action_str_list):
+        """
+        Execute the Host Reputation action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) != 2 or action_str_list[1].startswith('host=') is False:
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__host_reputation.parameters
+        else:
+            details, response_list = self.__host_reputation.execution(host=action_str_list[1][5:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__host_reputation.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_host_report(self, action_str_list):
+        """
+        Execute the Host Report action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) != 2 or action_str_list[1].startswith('host=') is False:
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__host_report.parameters
+        else:
+            details, response_list = self.__host_report.execution(host=action_str_list[1][5:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__host_report.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_host_urls(self, action_str_list):
+        """
+        Execute the Host URLs action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) < 2 or len(action_str_list) > 3 or \
+                action_str_list[1].startswith('host=') is False or \
+                (len(action_str_list) == 3 and action_str_list[2].startswith('limit=') is False):
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__host_urls.parameters
+        else:
+            if len(action_str_list) == 3:
+                details, response_list = self.__host_urls.execution(host=action_str_list[1][5:],
+                                                                    limit=int(action_str_list[2][6:]))
+            else:
+                details, response_list = self.__host_urls.execution(host=action_str_list[1][5:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__host_urls.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_url_scan(self, action_str_list):
+        """
+        Execute the URL Scan action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) < 2 or len(action_str_list) > 3 or \
+                action_str_list[1].startswith('url=') is False or \
+                (len(action_str_list) == 3 and action_str_list[2].startswith('extended_info=') is False):
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__url_scan.parameters
+        else:
+            if len(action_str_list) == 3:
+                details, response_list = self.__url_scan.execution(url=action_str_list[1][4:],
+                                                                   extended_info=action_str_list[2][14:])
+            else:
+                details, response_list = self.__url_scan.execution(url=action_str_list[1][4:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__url_scan.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_url_scan_sync(self, action_str_list):
+        """
+        Execute the URL Scan Sync action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) < 2 or len(action_str_list) > 4 or action_str_list[1].startswith('url=') is False or \
+                (len(action_str_list) == 3 and
+                 (action_str_list[2].startswith('extended_info=') is False and
+                  action_str_list[2].startswith('timeout=') is False)) or \
+                (len(action_str_list) == 4 and
+                 action_str_list[2].startswith('extended_info=') is True and
+                 action_str_list[3].startswith('timeout=') is False) or \
+                (len(action_str_list) == 4 and
+                 action_str_list[2].startswith('timeout=') is True and
+                 action_str_list[3].startswith('extended_info=') is False):
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__url_scan_sync.parameters
+        else:
+            if len(action_str_list) == 4 and action_str_list[2].startswith('extended_info=') is True:
+                details, response_list = self.__url_scan_sync.execution(url=action_str_list[1][4:],
+                                                                        extended_info=action_str_list[2][14:],
+                                                                        timeout=int(action_str_list[3][8:]))
+            elif len(action_str_list) == 4 and action_str_list[2].startswith('extended_info=') is False:
+                details, response_list = self.__url_scan_sync.execution(url=action_str_list[1][4:],
+                                                                        extended_info=action_str_list[3][14:],
+                                                                        timeout=int(action_str_list[2][8:]))
+            elif len(action_str_list) == 3 and action_str_list[2].startswith('extended_info=') is True:
+                details, response_list = self.__url_scan_sync.execution(url=action_str_list[1][4:],
+                                                                        extended_info=action_str_list[2][14:])
+            elif len(action_str_list) == 3 and action_str_list[2].startswith('extended_info=') is False:
+                details, response_list = self.__url_scan_sync.execution(url=action_str_list[1][4:],
+                                                                        timeout=int(action_str_list[2][8:]))
+            else:
+                details, response_list = self.__url_scan_sync.execution(url=action_str_list[1][4:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__url_scan_sync.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_scan_report(self, action_str_list):
+        """
+        Execute the Scan Report action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) < 2 or len(action_str_list) > 3 or \
+                action_str_list[1].startswith('scanid=') is False or \
+                (len(action_str_list) == 3 and action_str_list[2].startswith('extended_info=') is False):
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__scan_report.parameters
+        else:
+            if len(action_str_list) == 3:
+                details, response_list = self.__scan_report.execution(scanid=action_str_list[1][7:],
+                                                                      extended_info=action_str_list[2][14:])
+            else:
+                details, response_list = self.__scan_report.execution(scanid=action_str_list[1][7:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__scan_report.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_download_screenshot(self, action_str_list):
+        """
+        Execute the Download Screenshot action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) < 2 or len(action_str_list) > 3 or \
+                action_str_list[1].startswith('scanid=') is False or \
+                (len(action_str_list) == 3 and action_str_list[2].startswith('resolution=') is False):
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__download_sc.parameters
+        else:
+            if len(action_str_list) == 3:
+                details, response_list = self.__download_sc.execution(scanid=action_str_list[1][7:],
+                                                                      resolution=action_str_list[2][11:])
+            else:
+                details, response_list = self.__download_sc.execution(scanid=action_str_list[1][7:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__download_sc.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_download_html(self, action_str_list):
+        """
+        Execute the Download HTML action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) != 2 or action_str_list[1].startswith('scanid=') is False:
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__download_html.parameters
+        else:
+            details, response_list = self.__download_html.execution(scanid=action_str_list[1][7:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__download_html.title, response_list
+            else:
+                return 'error', details, response_list
+
+    def __execute_download_text(self, action_str_list):
+        """
+        Execute the Download Text action with the given parameters after validating the input 'action_str_list'.
+
+        :param action_str_list: List of action string components.
+        :return: Status of action execution and list of SlashNext API response(s).
+        """
+        if len(action_str_list) != 2 or action_str_list[1].startswith('scanid=') is False:
+            return 'error', 'Invalid Request! Please verify request parameters and try again', \
+                   self.__download_text.parameters
+        else:
+            details, response_list = self.__download_text.execution(scanid=action_str_list[1][7:])
+
+            if details.lower() == 'success':
+                return 'ok', self.__download_text.title, response_list
+            else:
+                return 'error', details, response_list
 
     def execute(self, action_str):
         """
@@ -222,231 +462,37 @@ class SlashNextPhishingIR(object):
         <action-name> <required-parameter> <optional-parameter-1> <optional-parameter-2> ...
         :return: Status of action execution and list of SlashNext API response(s).
         """
-        response_list = []
         action_str_list = action_str.strip().split()
         action = action_str_list[0].strip()
-        if action in self.supported_actions:
+        if action in self.__supported_actions:
             if action == 'slashnext-api-quota':
-                if len(action_str_list) != 1:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.api_quota.parameters()
-                else:
-                    details, response_list = self.api_quota.execution()
-
-                    if details.lower() == 'success':
-                        return 'ok', self.api_quota.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_api_quota(action_str_list)
 
             elif action == 'slashnext-host-reputation':
-                if len(action_str_list) != 2:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_reputation.parameters()
-                elif action_str_list[1].startswith('host=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_reputation.parameters()
-                else:
-                    details, response_list = self.host_reputation.execution(
-                        host=action_str_list[1][5:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.host_reputation.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_host_reputation(action_str_list)
 
             elif action == 'slashnext-host-report':
-                if len(action_str_list) != 2:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_report.parameters()
-                elif action_str_list[1].startswith('host=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_report.parameters()
-                else:
-                    details, response_list = self.host_report.execution(
-                        host=action_str_list[1][5:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.host_report.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_host_report(action_str_list)
 
             elif action == 'slashnext-host-urls':
-                if len(action_str_list) < 2 or len(action_str_list) > 3:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_urls.parameters()
-                elif action_str_list[1].startswith('host=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_urls.parameters()
-                elif len(action_str_list) == 3 and action_str_list[2].startswith('limit=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.host_urls.parameters()
-                else:
-                    if len(action_str_list) == 3:
-                        details, response_list = self.host_urls.execution(
-                            host=action_str_list[1][5:],
-                            limit=action_str_list[2][6:])
-                    else:
-                        details, response_list = self.host_urls.execution(
-                            host=action_str_list[1][5:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.host_urls.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_host_urls(action_str_list)
 
             elif action == 'slashnext-url-scan':
-                if len(action_str_list) < 2 or len(action_str_list) > 3:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan.parameters()
-                elif action_str_list[1].startswith('url=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan.parameters()
-                elif len(action_str_list) == 3 and action_str_list[2].startswith('extended_info=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan.parameters()
-                else:
-                    if len(action_str_list) == 3:
-                        details, response_list = self.url_scan.execution(
-                            url=action_str_list[1][4:],
-                            extended_info=action_str_list[2][14:])
-                    else:
-                        details, response_list = self.url_scan.execution(
-                            url=action_str_list[1][4:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.url_scan.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_url_scan(action_str_list)
 
             elif action == 'slashnext-url-scan-sync':
-                if len(action_str_list) < 2 or len(action_str_list) > 4:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan_sync.parameters()
-                elif action_str_list[1].startswith('url=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan_sync.parameters()
-                elif len(action_str_list) == 3 \
-                        and (action_str_list[2].startswith('extended_info=') is False
-                             and action_str_list[2].startswith('timeout=') is False):
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan_sync.parameters()
-                elif len(action_str_list) == 4 and action_str_list[2].startswith('extended_info=') is True \
-                        and action_str_list[3].startswith('timeout=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan_sync.parameters()
-                elif len(action_str_list) == 4 and action_str_list[2].startswith('timeout=') is True \
-                        and action_str_list[3].startswith('extended_info=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.url_scan_sync.parameters()
-                else:
-                    if len(action_str_list) == 4:
-                        if action_str_list[2].startswith('extended_info=') is True:
-                            details, response_list = self.url_scan_sync.execution(
-                                url=action_str_list[1][4:],
-                                extended_info=action_str_list[2][14:],
-                                timeout=action_str_list[3][8:])
-                        else:
-                            details, response_list = self.url_scan_sync.execution(
-                                url=action_str_list[1][4:],
-                                extended_info=action_str_list[3][14:],
-                                timeout=action_str_list[2][8:])
-                    elif len(action_str_list) == 3:
-                        if action_str_list[2].startswith('extended_info=') is True:
-                            details, response_list = self.url_scan_sync.execution(
-                                url=action_str_list[1][4:],
-                                extended_info=action_str_list[2][14:])
-                        else:
-                            details, response_list = self.url_scan_sync.execution(
-                                url=action_str_list[1][4:],
-                                timeout=action_str_list[2][8:])
-                    else:
-                        details, response_list = self.url_scan_sync.execution(
-                            url=action_str_list[1][4:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.url_scan_sync.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_url_scan_sync(action_str_list)
 
             elif action == 'slashnext-scan-report':
-                if len(action_str_list) < 2 or len(action_str_list) > 3:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.scan_report.parameters()
-                elif action_str_list[1].startswith('scanid=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.scan_report.parameters()
-                elif len(action_str_list) == 3 and action_str_list[2].startswith('extended_info=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.scan_report.parameters()
-                else:
-                    if len(action_str_list) == 3:
-                        details, response_list = self.scan_report.execution(
-                            scanid=action_str_list[1][7:],
-                            extended_info=action_str_list[2][14:])
-                    else:
-                        details, response_list = self.scan_report.execution(
-                            scanid=action_str_list[1][7:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.scan_report.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_scan_report(action_str_list)
 
             elif action == 'slashnext-download-screenshot':
-                if len(action_str_list) < 2 or len(action_str_list) > 3:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_sc.parameters()
-                elif action_str_list[1].startswith('scanid=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_sc.parameters()
-                elif len(action_str_list) == 3 and action_str_list[2].startswith('resolution=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_sc.parameters()
-                else:
-                    if len(action_str_list) == 3:
-                        details, response_list = self.download_sc.execution(
-                            scanid=action_str_list[1][7:],
-                            resolution=action_str_list[2][11:])
-                    else:
-                        details, response_list = self.download_sc.execution(
-                            scanid=action_str_list[1][7:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.download_sc.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_download_screenshot(action_str_list)
 
             elif action == 'slashnext-download-html':
-                if len(action_str_list) != 2:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_html.parameters()
-                elif action_str_list[1].startswith('scanid=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_html.parameters()
-                else:
-                    details, response_list = self.download_html.execution(
-                        scanid=action_str_list[1][7:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.download_html.title(), response_list
-                    else:
-                        return 'error', details, response_list
+                return self.__execute_download_html(action_str_list)
 
             elif action == 'slashnext-download-text':
-                if len(action_str_list) != 2:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_text.parameters()
-                elif action_str_list[1].startswith('scanid=') is False:
-                    return 'error', 'Invalid Request! Please verify request parameters and try again', \
-                           self.download_text.parameters()
-                else:
-                    details, response_list = self.download_text.execution(
-                        scanid=action_str_list[1][7:])
-
-                    if details.lower() == 'success':
-                        return 'ok', self.download_text.title(), response_list
-                    else:
-                        return 'error', details, response_list
-
+                return self.__execute_download_text(action_str_list)
         else:
-            return 'error', 'Invalid action', self.supported_actions
+            return 'error', 'Invalid action', self.__supported_actions

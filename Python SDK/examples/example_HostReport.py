@@ -22,9 +22,9 @@ host_report_action = SlashNextHostReport(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = host_report_action.name()
-action_title = host_report_action.title()
-action_description = host_report_action.description()
-action_parameters = host_report_action.parameters()
-action_help = host_report_action.help()
+action_name = host_report_action.name
+action_title = host_report_action.title
+action_description = host_report_action.description
+action_parameters = host_report_action.parameters
+action_help = host_report_action.help
 response_details, response_list = host_report_action.execution(host='www.google.com')

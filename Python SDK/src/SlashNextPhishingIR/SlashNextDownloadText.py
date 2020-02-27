@@ -13,10 +13,11 @@ Created on December 10, 2019
 
 @author: Saadat Abid
 """
+from .SlashNextAction import SlashNextAction
 from .SlashNextAPIs import snx_api_request, DL_TEXT_API
 
 
-class SlashNextDownloadText:
+class SlashNextDownloadText(SlashNextAction):
     """
     This class implements the 'slashnext-download-text' action by using the 'download/text' SlashNext OTI API.
 
@@ -31,60 +32,24 @@ class SlashNextDownloadText:
         :param api_key: The API Key used to authenticate with SlashNext OTI cloud.
         :param base_url: The Base URL for accessing SlashNext OTI APIs.
         """
-        self.api_key = api_key
-        self.base_url = base_url
+        self.__name = 'slashnext-download-text'
+        self.__title = 'SlashNext Phishing Incident Response - Download Text'
+        self.__description = 'This action downloads the text of a web page against a previous URL scan request.'
+        self.__parameters = [
+            {
+                'parameter': 'scanid',
+                'description': 'Scan ID. Can be retrieved from '
+                               'the \"slashnext-url-scan\" action or the \"slashnext-url-scan-sync\" action.'
+            }
+        ]
 
-    def name(self):
-        """
-        Gets the name string of the action.
+        super().__init__(name=self.__name,
+                         title=self.__title,
+                         description=self.__description,
+                         parameters=self.__parameters)
 
-        :return: Name of the action.
-        """
-        return 'slashnext-download-text'
-
-    def title(self):
-        """
-        Gets the output title string of the action.
-
-        :return: Output title of the action.
-        """
-        return 'SlashNext Phishing Incident Response - Download Text'
-
-    def description(self):
-        """
-        Gets the description string of the action which explains what the action do exactly.
-
-        :return: Description of the action.
-        """
-        return 'This action downloads the text of a web page against a previous URL scan request.'
-
-    def parameters(self):
-        """
-        Gets the list of the parameters accepted by the action.
-
-        :return: List of parameters accepted for the action.
-        """
-        scanid = {
-            'parameter': 'scanid',
-            'description': 'Scan ID. Can be retrieved from '
-                           'the \"slashnext-url-scan\" action or the \"slashnext-url-scan-sync\" action.'
-        }
-
-        return [scanid]
-
-    def help(self):
-        """
-        Gets the help string of action which gives details on how to execute the action.
-
-        :return: Help on the action.
-        """
-        help_str = '\nACTION: ' + self.name() + '\n  ' + self.description() + '\n'
-        help_str += '\nPARAMETERS: \n'
-        param_list = self.parameters()
-        for param in param_list:
-            help_str += '<' + param.get('parameter') + '>\n  ' + param.get('description') + '\n'
-
-        return help_str
+        self.__api_key = api_key
+        self.__base_url = base_url
 
     def execution(self, scanid):
         """
@@ -96,8 +61,8 @@ class SlashNextDownloadText:
         """
         api_data = {
             'scanid': scanid,
-            'authkey': self.api_key
+            'authkey': self.__api_key
         }
-        state, response = snx_api_request(self.base_url, DL_TEXT_API, api_data)
+        state, response = snx_api_request(self.__base_url, DL_TEXT_API, api_data)
 
         return state, [response]

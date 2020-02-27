@@ -22,9 +22,9 @@ host_urls_action = SlashNextHostUrls(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = host_urls_action.name()
-action_title = host_urls_action.title()
-action_description = host_urls_action.description()
-action_parameters = host_urls_action.parameters()
-action_help = host_urls_action.help()
+action_name = host_urls_action.name
+action_title = host_urls_action.title
+action_description = host_urls_action.description
+action_parameters = host_urls_action.parameters
+action_help = host_urls_action.help
 response_details, response_list = host_urls_action.execution(host='www.google.com', limit=5)

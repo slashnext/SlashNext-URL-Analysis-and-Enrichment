@@ -22,10 +22,10 @@ scan_report_action = SlashNextScanReport(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = scan_report_action.name()
-action_title = scan_report_action.title()
-action_description = scan_report_action.description()
-action_parameters = scan_report_action.parameters()
-action_help = scan_report_action.help()
+action_name = scan_report_action.name
+action_title = scan_report_action.title
+action_description = scan_report_action.description
+action_parameters = scan_report_action.parameters
+action_help = scan_report_action.help
 response_details, response_list = scan_report_action.execution(scanid='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
                                                                extended_info='true')

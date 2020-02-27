@@ -22,9 +22,9 @@ host_reputation_action = SlashNextHostReputation(
     base_url="https://oti.slashnext.cloud/api"
 )
 
-action_name = host_reputation_action.name()
-action_title = host_reputation_action.title()
-action_description = host_reputation_action.description()
-action_parameters = host_reputation_action.parameters()
-action_help = host_reputation_action.help()
+action_name = host_reputation_action.name
+action_title = host_reputation_action.title
+action_description = host_reputation_action.description
+action_parameters = host_reputation_action.parameters
+action_help = host_reputation_action.help
 response_details, response_list = host_reputation_action.execution(host='www.google.com')

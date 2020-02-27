@@ -13,10 +13,11 @@ Created on December 10, 2019
 
 @author: Saadat Abid
 """
+from .SlashNextAction import SlashNextAction
 from .SlashNextAPIs import snx_api_request, URL_SCAN_API, DL_SC_API, DL_HTML_API, DL_TEXT_API
 
 
-class SlashNextUrlScan:
+class SlashNextUrlScan(SlashNextAction):
     """
     This class implements the 'slashnext-url-scan' action by using the 'url/scan', 'download/screenshot',
     'download/html', and 'download/text' SlashNext OTI API.
@@ -32,70 +33,34 @@ class SlashNextUrlScan:
         :param api_key: The API Key used to authenticate with SlashNext OTI cloud.
         :param base_url: The Base URL for accessing SlashNext OTI APIs.
         """
-        self.api_key = api_key
-        self.base_url = base_url
+        self.__name = 'slashnext-url-scan'
+        self.__title = 'SlashNext Phishing Incident Response - URL Scan'
+        self.__description = 'Performs a real-time URL scan with SlashNext cloud-based SEER Engine. ' \
+                             'If the specified URL already exists in the cloud database, scan results will be ' \
+                             'returned immediately. If not, this action will submit a URL scan request and return ' \
+                             'with the message "check back later" and include a unique Scan ID. You can check the ' \
+                             'results of this scan using the "slashnext-scan-report" action anytime after 60 seconds ' \
+                             'using the returned Scan ID.'
+        self.__parameters = [
+            {
+                'parameter': 'url',
+                'description': 'The URL to scan.'
+            },
+            {
+                'parameter': 'extended_info',
+                'description': 'Whether to download forensics data, such as screenshot, HTML, and rendered text. '
+                               'If \"true\", forensics data will be returned. If \"false\" (or empty) forensics '
+                               'data will not be returned. Default is \"false\".'
+            }
+        ]
 
-    def name(self):
-        """
-        Gets the name string of the action.
+        super().__init__(name=self.__name,
+                         title=self.__title,
+                         description=self.__description,
+                         parameters=self.__parameters)
 
-        :return: Name of the action.
-        """
-        return 'slashnext-url-scan'
-
-    def title(self):
-        """
-        Gets the output title string of the action.
-
-        :return: Output title of the action.
-        """
-        return 'SlashNext Phishing Incident Response - URL Scan'
-
-    def description(self):
-        """
-        Gets the description string of the action which explains what the action do exactly.
-
-        :return: Description of the action.
-        """
-        return 'Performs a real-time URL reputation scan with SlashNext cloud-based SEER Engine. ' \
-               'If the specified URL already exists in the cloud database, scan results will be returned ' \
-               'immediately. If not, this action will submit a URL scan request and return with the message ' \
-               '"check back later" and include a unique Scan ID. You can check the results of this scan using ' \
-               'the "SlashNext Scan Report" action anytime after 60 seconds using the returned Scan ID.'
-
-    def parameters(self):
-        """
-        Gets the list of the parameters accepted by the action.
-
-        :return: List of parameters accepted for the action.
-        """
-        url = {
-            'parameter': 'url',
-            'description': 'The URL to scan.'
-        }
-
-        extended_info = {
-            'parameter': 'extended_info',
-            'description': 'Whether to download forensics data, such as screenshot, HTML, and rendered text. '
-                           'If \"true\", forensics data will be returned. If \"false\" (or empty) forensics data will '
-                           'not be returned. Default is \"false\".'
-        }
-
-        return [url, extended_info]
-
-    def help(self):
-        """
-        Gets the help string of action which gives details on how to execute the action.
-
-        :return: Help on the action.
-        """
-        help_str = '\nACTION: ' + self.name() + '\n  ' + self.description() + '\n'
-        help_str += '\nPARAMETERS: \n'
-        param_list = self.parameters()
-        for param in param_list:
-            help_str += '<' + param.get('parameter') + '>\n  ' + param.get('description') + '\n'
-
-        return help_str
+        self.__api_key = api_key
+        self.__base_url = base_url
 
     def execution(self, url, extended_info='false'):
         """
@@ -108,28 +73,27 @@ class SlashNextUrlScan:
         """
         api_data = {
             'url': url,
-            'authkey': self.api_key
+            'authkey': self.__api_key
         }
-        state, response = snx_api_request(self.base_url, URL_SCAN_API, api_data)
+        state, response = snx_api_request(self.__base_url, URL_SCAN_API, api_data)
 
         if state != 'Success' or response.get('errorNo') == 1:
             return state, [response]
 
-        if response.get('swlData') is not None:
-            if response.get('swlData').get('swlStatus') == 1:
-                return state, [response]
+        if response.get('swlData') is not None and response.get('swlData').get('swlStatus') == 1:
+            return state, [response]
 
         if extended_info == 'true':
             scanid = response.get('urlData').get('scanId')
             api_data = {
                 'scanid': scanid,
-                'authkey': self.api_key
+                'authkey': self.__api_key
             }
-            sta_html, response_html = snx_api_request(self.base_url, DL_HTML_API, api_data)
-            sta_text, response_text = snx_api_request(self.base_url, DL_TEXT_API, api_data)
+            sta_html, response_html = snx_api_request(self.__base_url, DL_HTML_API, api_data)
+            sta_text, response_text = snx_api_request(self.__base_url, DL_TEXT_API, api_data)
 
             api_data['resolution'] = 'medium'
-            sta_sc, response_sc = snx_api_request(self.base_url, DL_SC_API, api_data)
+            sta_sc, response_sc = snx_api_request(self.__base_url, DL_SC_API, api_data)
 
             return state, [response, response_sc, response_html, response_text]
         else:

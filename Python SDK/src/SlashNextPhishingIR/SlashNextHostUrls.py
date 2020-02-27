@@ -13,10 +13,11 @@ Created on December 10, 2019
 
 @author: Saadat Abid
 """
+from .SlashNextAction import SlashNextAction
 from .SlashNextAPIs import snx_api_request, HOST_REPORT_API
 
 
-class SlashNextHostUrls:
+class SlashNextHostUrls(SlashNextAction):
     """
     This class implements the 'slashnext-host-urls' action by using the 'host/report' SlashNext OTI API.
 
@@ -31,67 +32,29 @@ class SlashNextHostUrls:
         :param api_key: The API Key used to authenticate with SlashNext OTI cloud.
         :param base_url: The Base URL for accessing SlashNext OTI APIs.
         """
-        self.api_key = api_key
-        self.base_url = base_url
+        self.__name = 'slashnext-host-urls'
+        self.__title = 'SlashNext Phishing Incident Response - Host URLs'
+        self.__description = 'This action queries the SlashNext cloud database and retrieves a list of all URLs ' \
+                             'associated with the specified host.'
+        self.__parameters = [
+            {
+                'parameter': 'host',
+                'description': 'The host to look up in the SlashNext Threat Intelligence database, for which to return '
+                               'a list of associated URLs. Can be either a domain name or an IPv4 address.'
+            },
+            {
+                'parameter': 'limit',
+                'description': 'The maximum number of URL records to fetch. Default is 10.'
+            }
+        ]
 
-    def name(self):
-        """
-        Gets the name string of the action.
+        super().__init__(name=self.__name,
+                         title=self.__title,
+                         description=self.__description,
+                         parameters=self.__parameters)
 
-        :return: Name of the action.
-        """
-        return 'slashnext-host-urls'
-
-    def title(self):
-        """
-        Gets the output title string of the action.
-
-        :return: Output title of the action.
-        """
-        return 'SlashNext Phishing Incident Response - Host URLs'
-
-    def description(self):
-        """
-        Gets the description string of the action which explains what the action do exactly.
-
-        :return: Description of the action.
-        """
-        return 'This action queries the SlashNext Cloud database and retrieves a list of all URLs associated with ' \
-               'the specified host.'
-
-    def parameters(self):
-        """
-        Gets the list of the parameters accepted by the action.
-
-        :return: List of parameters accepted for the action.
-        """
-        host = {
-            'parameter': 'host',
-            'description': 'The host to look up in the SlashNext Threat Intelligence database, '
-                           'for which to return a list of associated URLs. '
-                           'Can be either a domain name or an IPv4 address.'
-        }
-
-        limit = {
-            'parameter': 'limit',
-            'description': 'The maximum number of URL records to fetch. Default is 10.'
-        }
-
-        return [host, limit]
-
-    def help(self):
-        """
-        Gets the help string of action which gives details on how to execute the action.
-
-        :return: Help on the action.
-        """
-        help_str = '\nACTION: ' + self.name() + '\n  ' + self.description() + '\n'
-        help_str += '\nPARAMETERS: \n'
-        param_list = self.parameters()
-        for param in param_list:
-            help_str += '<' + param.get('parameter') + '>\n  ' + param.get('description') + '\n'
-
-        return help_str
+        self.__api_key = api_key
+        self.__base_url = base_url
 
     def execution(self, host, limit=10):
         """
@@ -106,8 +69,8 @@ class SlashNextHostUrls:
             'host': host,
             'page': 1,
             'rpp': limit,
-            'authkey': self.api_key
+            'authkey': self.__api_key
         }
-        state, response = snx_api_request(self.base_url, HOST_REPORT_API, api_data)
+        state, response = snx_api_request(self.__base_url, HOST_REPORT_API, api_data)
 
         return state, [response]
