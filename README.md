@@ -3,5 +3,5 @@ SlashNext URL Analysis and Enrichment SDK enable users to write their own automa
 
 SlashNext URL Analysis and Enrichment currently offer following;
 
-1. Python SDK
+1. Python SDK 
 
