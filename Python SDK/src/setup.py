@@ -9,7 +9,7 @@ setup(
     name="slashnext-phishing-ir",
     author="Saadat Abid",
     author_email="saadat.abid.2540@slashnext.com",
-    version="1.0.0",
+    version="1.1.0",
     url="https://www.slashnext.com",
     description="Library for building SOAR applications using SlashNext Phishing Incident Response actions",
     long_description=long_description,

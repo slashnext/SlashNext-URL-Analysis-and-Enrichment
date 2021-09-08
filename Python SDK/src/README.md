@@ -109,6 +109,7 @@ response_details, response_list = host_reputation_action.execution(host='www.goo
 1. **slashnext-host-reputation** - Search in SlashNext cloud database and retrieve reputation of a host. 
 1. **slashnext-host-report** - Search in SlashNext cloud database and retrieve a detailed report for a host and associated URL.
 1. **slashnext-host-urls** - Search in SlashNext cloud database and retrieve list of all URLs associated with the specified host.
+1. **slashnext-url-reputation** - Search in SlashNext cloud database and retrieve reputation of a URL.
 1. **slashnext-url-scan** - Perform a real-time URL reputation scan with SlashNext cloud-based SEER Engine.
 1. **slashnext-url-scan-sync** - Perform a real-time URL scan with SlashNext cloud-based SEER Engine in a blocking mode.
 1. **slashnext-scan-report** - Retrieve URL scan results against a previous scan request.
@@ -261,6 +262,48 @@ Search in SlashNext cloud database and retrieve list of all URLs associated with
 <td>numeric</td>
 
 <td></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+## Action: 'slashnext-url-reputation'
+
+Search in SlashNext cloud database and retrieve reputation of a URL.
+
+### Action Parameters
+
+<table>
+
+<tbody>
+
+<tr class="plain">
+
+<th style="padding-right:5px;">PARAMETER</th>
+
+<th style="padding-right:5px;">REQUIRED</th>
+
+<th style="padding-right:5px;">DESCRIPTION</th>
+
+<th style="padding-right:5px;">TYPE</th>
+
+<th>CONTAINS</th>
+
+</tr>
+
+<tr>
+
+<td>**url**</td>
+
+<td>required</td>
+
+<td>The URL to look up in the SlashNext Threat Intelligence database.</td>
+
+<td>string</td>
+
+<td><span class="highlight">url</span></td>
 
 </tr>
 
